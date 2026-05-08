@@ -1,106 +1,49 @@
-/**
- * Sidebar.ts — Panel lateral con lista acumulativa de ganadores
- */
-
-import { TOTAL } from '../config'
-import { esc } from '../utils/helpers'
-
-/** Renderiza el aside#sidebar */
-export function renderSidebar(): HTMLElement {
-  const aside: HTMLElement = document.createElement('aside')
-  aside.id = 'sidebar'
-
-  aside.innerHTML = `
-    <div class="sb-head">
-      <div class="sb-logo">
-        <div class="sb-logo-box">🐥</div>
-        <div class="sb-logo-text">
-          <div class="mv2">Arequipa</div>
-          <div class="av2">avancemos</div>
-        </div>
-      </div>
-
-      <h3>🏆 GANADORES</h3>
-
-      <div class="sb-count" id="sb-count">0 / ${TOTAL}</div>
-    </div>
-
-    <div id="sb-list"></div>
-
-    <div class="sb-footer">
-      <div class="marcos">Marcos Sánchez</div>
-      <div class="cargo">Movimiento Regional</div>
-    </div>
-  `
-
-  return aside
+interface SidebarProps {
+    winners: string[];
 }
 
-/**
- * Agrega un ganador a la lista del sidebar con animación.
- * @param nombre - Nombre del ganador
- * @param num - Número global (1..30)
- */
-export function addSidebarItem(
-  nombre: string,
-  num: number
-): void {
-  const list = document.getElementById(
-    'sb-list'
-  ) as HTMLDivElement | null
+export const Sidebar = ({ winners }: SidebarProps) => {
+    return (
+        <aside className="w-full md:w-80 bg-black/20 backdrop-blur-md border-t md:border-t-0 md:border-l border-sorteo-gold/10 p-6 flex flex-col h-auto md:h-screen md:sticky md:top-0">
+            <div className="w-full">
+                <h2 className="text-2xl font-bold text-sorteo-gold mb-6 flex items-center gap-2">
+                    🏆 Historial{' '}
+                    <span className="text-sm bg-sorteo-red text-white px-3 py-1 rounded-full">
+                        {winners.length} / 30
+                    </span>
+                </h2>
 
-  const countEl = document.getElementById(
-    'sb-count'
-  ) as HTMLDivElement | null
+                <div className="space-y-3 overflow-y-auto max-h-[60vh] md:max-h-[80vh] pr-2 custom-scrollbar">
+                    {winners.length > 0 ? (
+                        // Invertimos la lista para ver el ganador más reciente arriba
+                        [...winners].reverse().map((winner, index) => {
+                            // Calculamos el número real de pollo (del 1 al 30)
+                            const polloNumero = winners.length - index;
 
-  if (!list) return
-
-  const item: HTMLDivElement = document.createElement('div')
-  item.className = 'sb-item new'
-
-  item.innerHTML = `
-    <span class="sb-num">${num}.</span>
-    <span class="sb-name">${esc(nombre)}</span>
-  `
-
-  list.appendChild(item)
-
-  // Fade-in con doble rAF para asegurar transición CSS
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      item.classList.add('show')
-    })
-  })
-
-  // Quitar highlight "nuevo" después de un momento
-  setTimeout(() => {
-    item.classList.remove('new')
-  }, 1600)
-
-  // Scroll automático al final
-  list.scrollTop = list.scrollHeight
-
-  // Actualizar contador
-  if (countEl) {
-    countEl.textContent = `${num} / ${TOTAL}`
-  }
-}
-
-/** Limpia la lista del sidebar (usado en reset) */
-export function clearSidebar(): void {
-  const list = document.getElementById(
-    'sb-list'
-  ) as HTMLDivElement | null
-
-  if (list) {
-    list.innerHTML = ''
-  }
-
-  const countEl = document.getElementById(
-    'sb-count'
-  ) as HTMLDivElement | null
-
-  if (countEl) {
-    countEl.textContent = `0 / ${TOTAL}`
-  }
-}
+                            return (
+                                <div
+                                    key={polloNumero}
+                                    className="bg-white/5 p-3 rounded-lg border border-white/5 flex items-center gap-3 animate-slide-in hover:bg-white/10 transition-colors"
+                                >
+                                    <span className="text-sorteo-orange font-bold w-6">
+                                        #{polloNumero}
+                                    </span>
+                                    <span className="text-sorteo-cream font-medium truncate">
+                                        {winner}
+                                    </span>
+                                </div>
+                            );
+                        })
+                    ) : (
+                        <div className="text-center py-20 opacity-30 animate-pulse">
+                            <p className="text-5xl mb-4">🔥</p>
+                            <p className="italic">
+                                El horno está calentando...
+                            </p>
+                        </div>
+                    )}
+                </div>
+            </div>
+        </aside>
+    );
+};
